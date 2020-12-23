@@ -1,33 +1,26 @@
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
 import { primeraMayuscula } from '../helper';
 
 const DivResumen = styled.div`
-  background-color: #00838F;
-  padding: 1rem;
+  background-color: #00838f;
   color: white;
   text-align: center;
   margin-top: 1rem;
-  display: block;
+  padding: 1rem;
 `;
 
-const Listado = styled.li`
-  /* text-transform: uppercase; */
-  text-align: center;
-`;
-
-const Resumen = ({ datos }) => {
-  // Otra forma de cargar condicionalmente un pedazo de componente
-  const { marca, plan, year } = datos;
-
-  if (marca === "" || plan === "" || year === "") return null;
+const Resumen = ({datos}) => {
+    
+    const { year, plan, marca } = datos;
+    if( year === '' ||  plan === '' ||  marca === '' ) return null;
 
   return (
     <DivResumen>
-      <h2>Resumen de cotización</h2>
+      <h2>Resumen cotización</h2>
       <ul>
-        <Listado>Marca: {primeraMayuscula(marca)}</Listado>
-        <Listado>Plan: {primeraMayuscula(plan)}</Listado>
-        <Listado>Año: {year}</Listado>
+        <li>Marca: {primeraMayuscula(marca)} </li>
+        <li>Plan: {primeraMayuscula(plan)} </li>
+        <li>Año: {year} </li>
       </ul>
     </DivResumen>
   );

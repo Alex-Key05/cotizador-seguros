@@ -1,15 +1,15 @@
-import { useState } from 'react';
 import styled from '@emotion/styled';
-import { obtenerDiferenciaYear, calcularMarca, calcularPlan } from '../helper';
+import { useState } from 'react';
+import { diferenciaYear, calcularMarca, calcularPlan } from '../helper';
 
 const Campo = styled.div`
-    display: flex;
-    margin-bottom: 1rem;
-    align-items: center;
+  display: flex;
+  margin-bottom: 1rem;
+  align-items: center;
 `;
 
-const Label = styled.label`
-    flex: 0 0 100px;
+const Label = styled.div`
+   flex: 0 0 100px;
 `;
 
 const Select = styled.select`
@@ -17,8 +17,7 @@ const Select = styled.select`
     width: 100%;
     padding: 1rem;
     border: 1px solid #e1e1e1;
-    // webkit quita la apariencia natual del Select
-    -webkit-appearance: none; 
+    -webkit-appearance: none;
 `;
 
 const InputRadio = styled.input`
@@ -27,97 +26,103 @@ const InputRadio = styled.input`
 
 const Button = styled.button`
     background-color: #26C6DA;
-    font-size: 16px;
-    width: 100%;
-    padding: 1rem;
-    color: #FFF;
-    text-transform: uppercase;
-    font-weight: bold;
     border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 1rem;
+    padding: 1rem;
     transition: 200ms;
-    margin-top: 2rem;
+    width: 100%;
+    text-transform: uppercase;
 
-    /* Sintaxis tipo sass para el hover */
     &:hover {
-        cursor: pointer;
-        background-color: #00838F;
+      background-color: #00838F;  
+      cursor: pointer;
     }
 `;
 
 const Error = styled.div`
-    background-color: red;
-    color: white;
-    padding: 1rem;
-    text-align: center; 
-    margin-top: 1rem;
+  background-color: red;
+  color: white;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: center;
 `;
 
-const Formulario = ({ setResumen }) => {
+export const Formulario = ({setResumen, setCargando}) => {
 
-  const [datos, setDatos] = useState({
-      marca: '',
-      year: '',
-      plan: '',
-  }); 
+    const [error, setError] = useState(false);
 
-  const [error, setError] = useState(false);
+    const [datos, setDatos] = useState({
+    marca: '',
+    year: '',
+    plan: '',
+ });
 
-  const { marca, year, plan } = datos;
+ const { marca, year, plan } = datos;
+ 
+ const obtenerInformacion = e => {
+   setDatos({ ...datos, [e.target.name]: e.target.value });
+ } 
+ 
+ const submitForm = e => {
+   e.preventDefault();
+   if( marca.trim() === '' || year.trim() === '' || plan.trim() === '' ) {
+     setError(true);
+    return;
+   }
+   setError(false);
 
-  const obtenerInformacion = e => {
-    setDatos({ ...datos, [e.target.name]: e.target.value });
-  }
+   // Una base de 2000
+   let resultado = 2000;
 
-  const cotizarSeguro = e => {
-    e.preventDefault();
-    if( marca.trim() === '' || year.trim() === '' || plan.trim() === '' ) {
-        setError(true);
-        return;
-    }
-    setError(false);
-
-    // Una base de 2000
-    let resultado = 2000;
-
-    // Obtener la diferencia de años
-    const diferencia = obtenerDiferenciaYear(year);
+   // Obtener la diferencia de años
+   const diferencia = diferenciaYear(year);
 
     // Por cada año hay que restar el 3%
-    resultado -= (( diferencia * 3 ) * resultado) / 100;
-
+    resultado -= (( diferencia * 3 ) * resultado / 100);
+        
     // Americano 15%
     // Asiático 5%
     // Europeo 30%
     resultado = calcularMarca(marca) * resultado;
-    
+
     // Básico aumenta 20%
     // Completo aumenta 50%
-    const incrementoPlan = calcularPlan(plan); 
-    resultado = parseFloat(incrementoPlan * resultado).toFixed(2);
-    
+    const incrementoPlan = calcularPlan(plan);
+    resultado = parseFloat( incrementoPlan * resultado ).toFixed(2);
+
     // Total
-    console.log(resultado);
+
+   setCargando(true);
+
+   setTimeout( () => {
+    setCargando(false);
+
     setResumen({
-        cotizacion: resultado,
-        datos
+      cotizacion: resultado,
+      datos,
     });
-}
+   }, 3000)
+   
+ }
 
   return (
     <form
-     onSubmit={cotizarSeguro}
+      onSubmit={submitForm}
     >
       <Campo>
         <Label>Marca</Label>
-        <Select
-         name="marca"
+        <Select 
+         name="marca" 
          value={marca}
          onChange={obtenerInformacion}
-        >
+         >
           <option value="">--Seleccione--</option>
-          <option value="americano">--Americano--</option>
-          <option value="europeo">--Europeo--</option>
-          <option value="asiatico">--Asiatico--</option>
+          <option value="americano">Americano</option>
+          <option value="asiatico">Asiático</option>
+          <option value="europeo">Europeo</option>
         </Select>
       </Campo>
 
@@ -128,7 +133,7 @@ const Formulario = ({ setResumen }) => {
          value={year}
          onChange={obtenerInformacion}
         >
-          <option value="">-- Seleccione --</option>
+        <option value="">--Seleccione--</option>
           <option value="2021">2021</option>
           <option value="2020">2020</option>
           <option value="2019">2019</option>
@@ -144,28 +149,29 @@ const Formulario = ({ setResumen }) => {
 
       <Campo>
         <Label>Plan</Label>
-        <InputRadio 
-         type="radio" 
-         name="plan" 
-         value="basico"
-         checked={plan === 'basico'}
+        <InputRadio
+          type="radio"
+          name="plan"
+          value="basico"
+          onChange={obtenerInformacion}
+          checked={ plan === 'basico' }
+         />Básico
+
+        <InputRadio
+          type="radio"
+          name="plan"
+          value="completo"
          onChange={obtenerInformacion}
-        />
-        Básico
-        <InputRadio 
-         type="radio" 
-         name="plan" 
-         value="completo" 
-         checked={plan === 'completo'}
-         onChange={obtenerInformacion}
-        />
-        Completo
+         checked={ plan === 'completo' }
+         />Completo
       </Campo>
 
-      <Button type="submit">Cotizar</Button>
+      <Button
+        type="submit"
+      >Cotizar</Button>
+
       { error ? <Error>Todos los campos son obligatorios</Error> : null } 
+
     </form>
   );
 };
-
-export default Formulario;
